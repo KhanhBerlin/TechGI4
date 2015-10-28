@@ -62,11 +62,12 @@ int main(int argc, char *argv[])
   /* ******************************************************************
      TO BE DONE: Create socket
    ******************************************************************* */
-  int mysock = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+  int mysock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
   if (mysock == -1) {
-    fprintf(stderr, "creating socket failed!!!");
+    fprintf(stderr, "creating socket failed!!!\n");
     exit(EXIT_FAILURE);
   }
+  fprintf(stdout, "created socket %d successfully\n", mysock);
 
   //setup transport address
   their_addr.sin_family = AF_INET;
@@ -77,16 +78,23 @@ int main(int argc, char *argv[])
   /* ******************************************************************
      TO BE DONE:  Binding
    ******************************************************************* */
-  connect(mysock, (struct sockaddr *)&their_addr, sizeof(their_addr));
 
   unsigned char buffer[4];
 
   packData(buffer, a, b);
 
+  printf("hi1\n");
+
   /* ******************************************************************
      TO BE DONE:  Send data
    ******************************************************************* */
-  write(mysock, &buffer, 4);
+  int foo = sendto(mysock, &buffer, 4, 0, (struct sockaddr *)&their_addr, sizeof(their_addr));
+  if (foo == -1) {
+    fprintf(stderr, "failed to send data\n");
+  } else {
+    fprintf(stdout, "sent %d things\n", foo);
+  }
+  printf("hi2\n");
 
   /* ******************************************************************
      TO BE DONE:  Close socket
