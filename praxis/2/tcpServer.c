@@ -20,11 +20,14 @@
 
 #define MAX_BUFFER_LENGTH 100
 
-int gcd ( int a, int b ) // geklaut TM
+/* calculate gcd (geklaut TM) */
+int gcd(int a, int b)
 {
   int c;
-  while ( a != 0 ) {
-     c = a; a = b%a;  b = c;
+  while (a != 0) {
+     c = a;
+     a = b%a;
+     b = c;
   }
   return b;
 }
@@ -35,7 +38,8 @@ void unpackData(unsigned char *buffer, unsigned int *a, unsigned int *b)
   *b = (buffer[2]<<8) | buffer[3];
 }
 
-int packData(unsigned char *buffer, unsigned int a, unsigned int b) {
+int packData(unsigned char *buffer, unsigned int a, unsigned int b)
+{
   /* ******************************************************************
      TO BE DONE:  pack data
    ******************************************************************* */
@@ -49,80 +53,59 @@ int packData(unsigned char *buffer, unsigned int a, unsigned int b) {
 
 int main(int argc, char *argv[])
 {
-  /* int sockfd; */
+  int sockfd, sockfd2;
   struct sockaddr_in their_addr; // connector's address information
-  /* struct hostent *he; */
   int server_port;
   int a = 0;
   int b = 0;
 
-  printf("Streaming socket client example\n\n");
+  printf("Streaming socket server example\n\n");
 
+  /* check number of arguments */
   if (argc != 2) {
     fprintf(stderr,"Usage: tcpServer tcpPort\n");
     exit(EXIT_FAILURE);
   }
 
+  /* initialize port number from give argument */
   server_port = atoi(argv[1]);
-  /* a = atoi(argv[3]); */
-  /* b = atoi(argv[4]); */
 
-  //Resolv hostname to IP Address
-  /* if ((he=gethostbyname(argv[1])) == NULL) {  // get the host info */
-  /*   herror("gethostbyname"); */
-  /*   exit(EXIT_FAILURE); */
-  /* } */
-
-  /* ******************************************************************
-     TO BE DONE: Create socket
-   ******************************************************************* */
-  int mysock = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-  if (mysock == -1) {
+  /* create socket */
+  sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+  if (sockfd == -1) {
     fprintf(stderr, "creating socket failed!!!\n");
     exit(EXIT_FAILURE);
   }
   printf("created socket\n");
 
-  //setup transport address
+  /* setup address */
   their_addr.sin_family = AF_INET;
   their_addr.sin_port = htons((uint16_t)server_port);
   their_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  /* their_addr.sin_addr = *((struct in_addr *)he->h_addr); */
   memset(their_addr.sin_zero, '\0', sizeof their_addr.sin_zero);
 
-  /* ******************************************************************
-     TO BE DONE:  Binding
-   ******************************************************************* */
-  int mybind = bind(mysock, (struct sockaddr *)&their_addr, sizeof(their_addr));
+  /* bind address to socket */
+  int mybind = bind(sockfd, (struct sockaddr *)&their_addr, sizeof(their_addr));
   if (mybind < 0){
-    fprintf(stderr, "binding address to socket %d failed\n", mysock);
+    fprintf(stderr, "binding address to socket %d failed\n", sockfd);
   } else {
-    fprintf(stdout, "bound addr. to socket %d\n", mysock);
+    fprintf(stdout, "bound addr. to socket %d\n", sockfd);
   }
-  listen(mysock, 8);
-  int foo = sizeof(their_addr);
-  int newsock = accept(mysock, (struct sockaddr *)&their_addr, &foo);
 
+  /* listen to socket */
+  listen(sockfd, 8);
+
+  /* accept connection */
+  int addrsize = sizeof(their_addr);
+  sockfd2 = accept(sockfd, (struct sockaddr *)&their_addr, &addrsize);
+
+  /* receave data and write into buffer */
   unsigned char buffer[4];
+  read(sockfd2, &buffer, 4);
 
-  /* packData(buffer, a, b); */
-
-  /* ******************************************************************
-     TO BE DONE:  Send data
-   ******************************************************************* */
-  read(newsock, &buffer, 4);
-
+  /* unpack/print data */
   unpackData(buffer, &a, &b);
-
   printf("gcd of %d and %d is %d\n", a, b, gcd(a,b));
 
-  /* ******************************************************************
-     TO BE DONE:  Close socket
-   ******************************************************************* */
-  /* if (close(mysock) == -1) { */
-  /*   fprintf(stderr, "couldn't close socket %d", mysock); */
-  /*   exit(EXIT_FAILURE); */
-  /* } */
-
-  /* return EXIT_SUCCESS; */
+  return EXIT_SUCCESS;
 }

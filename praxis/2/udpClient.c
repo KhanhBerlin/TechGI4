@@ -20,11 +20,8 @@
 
 #define MAX_BUFFER_LENGTH 100
 
-
-int packData(unsigned char *buffer, unsigned int a, unsigned int b) {
-  /* ******************************************************************
-     TO BE DONE:  pack data
-   ******************************************************************* */
+int packData(unsigned char *buffer, unsigned int a, unsigned int b)
+{
   buffer[0] = (char)(a>>8);
   buffer[1] = (char)a;
   buffer[2] = (char)(b>>8);
@@ -42,65 +39,54 @@ int main(int argc, char *argv[])
   int a = 0;
   int b = 0;
 
-  printf("Streaming socket client example\n\n");
+  printf("datagram socket client example\n\n");
 
+  /* check number of arguments */
   if (argc != 5) {
-    fprintf(stderr,"Usage: tcpClient serverName serverPort int1 int2\n");
+    fprintf(stderr,"Usage: udpClient serverName serverPort int1 int2\n");
     exit(EXIT_FAILURE);
   }
 
+  /* initialize port number and data given through arguments */
   server_port = atoi(argv[2]);
   a = atoi(argv[3]);
   b = atoi(argv[4]);
 
-  //Resolv hostname to IP Address
+  /* Resolv hostname to IP Address */
   if ((he=gethostbyname(argv[1])) == NULL) {  // get the host info
     herror("gethostbyname");
     exit(EXIT_FAILURE);
   }
 
-  /* ******************************************************************
-     TO BE DONE: Create socket
-   ******************************************************************* */
-  int mysock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
-  if (mysock == -1) {
+  /* create socket */
+  sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+  if (sockfd == -1) {
     fprintf(stderr, "creating socket failed!!!\n");
     exit(EXIT_FAILURE);
   }
-  fprintf(stdout, "created socket %d successfully\n", mysock);
+  fprintf(stdout, "created socket %d successfully\n", sockfd);
 
-  //setup transport address
+  /* setup transport address */
   their_addr.sin_family = AF_INET;
   their_addr.sin_port = htons((uint16_t)server_port);
   their_addr.sin_addr = *((struct in_addr *)he->h_addr);
   memset(their_addr.sin_zero, '\0', sizeof their_addr.sin_zero);
 
-  /* ******************************************************************
-     TO BE DONE:  Binding
-   ******************************************************************* */
-
+  /* write data into buffer */
   unsigned char buffer[4];
-
   packData(buffer, a, b);
 
-  printf("hi1\n");
-
-  /* ******************************************************************
-     TO BE DONE:  Send data
-   ******************************************************************* */
-  int foo = sendto(mysock, &buffer, 4, 0, (struct sockaddr *)&their_addr, sizeof(their_addr));
+  /* send data */
+  int foo = sendto(sockfd, &buffer, 4, 0, (struct sockaddr *)&their_addr, sizeof(their_addr));
   if (foo == -1) {
     fprintf(stderr, "failed to send data\n");
   } else {
     fprintf(stdout, "sent %d things\n", foo);
   }
-  printf("hi2\n");
 
-  /* ******************************************************************
-     TO BE DONE:  Close socket
-   ******************************************************************* */
-  if (close(mysock) == -1) {
-    fprintf(stderr, "couldn't close socket %d", mysock);
+  /* close socket */
+  if (close(sockfd) == -1) {
+    fprintf(stderr, "couldn't close socket %d", sockfd);
     exit(EXIT_FAILURE);
   }
 
