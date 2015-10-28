@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
     fprintf(stderr, "creating socket failed!!!\n");
     exit(EXIT_FAILURE);
   }
-  printf("created socket\n");
 
   /* setup address */
   their_addr.sin_family = AF_INET;
@@ -88,20 +87,29 @@ int main(int argc, char *argv[])
   int mybind = bind(sockfd, (struct sockaddr *)&their_addr, sizeof(their_addr));
   if (mybind < 0){
     fprintf(stderr, "binding address to socket %d failed\n", sockfd);
-  } else {
-    fprintf(stdout, "bound addr. to socket %d\n", sockfd);
+    exit(EXIT_FAILURE);
   }
 
   /* listen to socket */
-  listen(sockfd, 8);
+  if (listen(sockfd, 8) == -1) {
+    fprintf(stderr, "couldn't listen to socket %d\n", sockfd);
+    exit(EXIT_FAILURE);
+  }
 
   /* accept connection */
   int addrsize = sizeof(their_addr);
   sockfd2 = accept(sockfd, (struct sockaddr *)&their_addr, &addrsize);
+  if (sockfd2 == -1) {
+    fprintf(stderr, "failed to accept connection\n");
+    exit(EXIT_FAILURE);
+  }
 
   /* receave data and write into buffer */
   unsigned char buffer[4];
-  read(sockfd2, &buffer, 4);
+  if (read(sockfd2, &buffer, 4) == -1) {
+    fprintf(stderr, "failed to read from socket %d\n", sockfd2);
+    exit(EXIT_FAILURE);
+  }
 
   /* unpack/print data */
   unpackData(buffer, &a, &b);

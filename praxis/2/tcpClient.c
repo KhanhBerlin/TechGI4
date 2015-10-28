@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
   a = atoi(argv[3]);
   b = atoi(argv[4]);
 
-  /* Resolv hostname to IP Address */
+  /* resolve hostname to ip address */
   if ((he=gethostbyname(argv[1])) == NULL) {  // get the host info
     herror("gethostbyname");
     exit(EXIT_FAILURE);
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
   /* create socket */
   sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
   if (sockfd == -1) {
-    fprintf(stderr, "creating socket failed!!!");
+    fprintf(stderr, "creating socket failed! wut\n");
     exit(EXIT_FAILURE);
   }
 
@@ -72,18 +72,26 @@ int main(int argc, char *argv[])
   memset(their_addr.sin_zero, '\0', sizeof their_addr.sin_zero);
 
   /* connect to server */
-  connect(sockfd, (struct sockaddr *)&their_addr, sizeof(their_addr));
+  if (connect(sockfd, (struct sockaddr *)&their_addr, sizeof(their_addr)) == -1) {
+    fprintf(stderr, "connecting to server failed\n");
+    exit(EXIT_FAILURE);
+  }
 
   /* write data into buffer */
   unsigned char buffer[4];
   packData(buffer, a, b);
 
   /* send data */
-  write(sockfd, &buffer, 4);
+  if (write(sockfd, &buffer, 4) == -1) {
+    fprintf(stderr, "couldn't send data\n");
+    exit(EXIT_FAILURE);
+  } else {
+    printf("successfully transmitted some data\n")
+  }
 
   /* close socket */
   if (close(sockfd) == -1) {
-    fprintf(stderr, "couldn't close socket %d", sockfd);
+    fprintf(stderr, "couldn't close socket %d\n", sockfd);
     exit(EXIT_FAILURE);
   }
 

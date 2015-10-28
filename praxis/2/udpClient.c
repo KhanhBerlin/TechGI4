@@ -64,7 +64,6 @@ int main(int argc, char *argv[])
     fprintf(stderr, "creating socket failed!!!\n");
     exit(EXIT_FAILURE);
   }
-  fprintf(stdout, "created socket %d successfully\n", sockfd);
 
   /* setup transport address */
   their_addr.sin_family = AF_INET;
@@ -80,13 +79,14 @@ int main(int argc, char *argv[])
   int foo = sendto(sockfd, &buffer, 4, 0, (struct sockaddr *)&their_addr, sizeof(their_addr));
   if (foo == -1) {
     fprintf(stderr, "failed to send data\n");
+    exit(EXIT_FAILURE);
   } else {
-    fprintf(stdout, "sent %d things\n", foo);
+    fprintf(stdout, "sent %d bytes\n", foo);
   }
 
   /* close socket */
   if (close(sockfd) == -1) {
-    fprintf(stderr, "couldn't close socket %d", sockfd);
+    fprintf(stderr, "couldn't close socket %d\n", sockfd);
     exit(EXIT_FAILURE);
   }
 
